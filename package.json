@@ -1,0 +1,32 @@
+{
+  "name": "errand-web",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "cd ./app && vite build",
+    "preview": "vite preview",
+    "app": "cd ./app && npx vite dev"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.56.0",
+    "@aws-amplify/ui-vue": "^4.3.5",
+    "@openai/codex": "^0.1.2505172129",
+    "@primeuix/themes": "^1.2.2",
+    "aws-amplify": "^6.15.7",
+    "primeicons": "^7.0.0",
+    "primevue": "^4.3.6",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.3",
+    "sass": "^1.89.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "vite-plugin-node-polyfills": "^0.23.0"
+  }
+}

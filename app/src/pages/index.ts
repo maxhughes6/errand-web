@@ -1,0 +1,9 @@
+export { default as Browse } from "./Browse.vue";
+export { default as Home } from "./Home.vue";
+export { default as Login } from "./Login.vue";
+export { default as AuthCallback } from "./AuthCallback.vue";
+export { default as MyRecipes } from "./MyRecipes.vue";
+export { default as Product } from "./Product.vue";
+export { default as Recipes } from "./Recipes.vue";
+export { default as Settings } from "./Settings.vue";
+export { default as UserSignup } from "./UserSignup.vue";
