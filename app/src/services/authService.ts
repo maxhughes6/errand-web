@@ -5,11 +5,12 @@ import { authenticatedFetch } from './authenticatedFetch';
 
 const redirectUri = `${location.origin}/`;
 const ERRAND_API_BASE_URL = import.meta.env.VITE_ERRAND_API_BASE_URL;
+const KROGER_CLIENT_ID = import.meta.env.VITE_KROGER_CLIENT_ID;
 
 export const authService = {
     async redirectToGrocererAuthorization(grocerer: string, returnTo: string = "user-signup"): Promise<void> {
         const returnUrl = `${redirectUri}?returnTo=${returnTo}`;
-        window.location.href = `https://api.kroger.com/v1/connect/oauth2/authorize?scope=product.compact%20cart.basic:write&response_type=code&client_id=errandtestapplication-bbc6txqq&redirect_uri=${returnUrl}&banner=${grocerer}`;
+        window.location.href = `https://api.kroger.com/v1/connect/oauth2/authorize?scope=product.compact%20cart.basic:write&response_type=code&client_id=${KROGER_CLIENT_ID}&redirect_uri=${returnUrl}&banner=${grocerer}`;
     },
 
     async exchangeCodeForAuthToken(code: string): Promise<KrogerAuthorizationResponse> {
