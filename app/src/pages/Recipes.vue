@@ -87,7 +87,6 @@ async function getRecipeSuggestions() {
   const generatedRecipes = await recipesService.generateRecipes(searchInput.value, dietaryPreferences.value);
   recipes.value = generatedRecipes.recipes;
   loading.value = false;
-  recipes.value.forEach(recipe => recipesService.saveRecipe(recipe));
 }
 </script>
 

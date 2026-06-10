@@ -84,8 +84,7 @@ onMounted(async () => {
   <div class="page-container">
     <div class="page-content">
       <h1>{{ userState.getUser()?.preferredName }}'s Recipes</h1>
-      <p class="page-description">Here are your saved recipes! When you generate new recipes, they will be saved here
-        automatically.</p>
+      <p class="page-description">Here are your saved recipes! Save recipes from the Recipes tab by clicking the bookmark icon on a recipe tile, or by adding its ingredients to your cart.</p>
       <LoadingSpinner v-if="isLoading" message="Loading your saved recipes..." />
       <div v-else-if="recipes.length" class="recipes-list">
         <RecipeCard v-for="recipe in recipes" :key="recipe.recipeId ?? recipe.recipeName" :recipe="recipe"
@@ -95,8 +94,7 @@ onMounted(async () => {
           @view-instructions="openInstructionsDialog" />
       </div>
       <div v-else class="empty-state">
-        <p>Looks like you don't have any saved recipes yet. Generate some recipes on the Recipes tab and they will be
-          saved here automatically!</p>
+        <p>Looks like you don't have any saved recipes yet. Generate some on the Recipes tab and save them using the bookmark icon or by adding ingredients to your cart.</p>
       </div>
     </div>
 

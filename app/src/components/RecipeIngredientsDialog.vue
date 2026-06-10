@@ -1,7 +1,7 @@
 <script setup>
 import { defineProps, defineEmits, ref, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
-import { krogerService } from '../services';
+import { krogerService, recipesService } from '../services';
 import { LoadingSpinner, KrogerConnectionAlert } from './';
 import { sessionState, userState } from '../state';
 
@@ -103,6 +103,7 @@ async function handleAddItemsToCartClick() {
 
     try {
         await krogerService.addToCart(itemsToAdd);
+        recipesService.saveRecipe(props.selectedRecipe).catch(() => {});
         closeDialog();
         toast.add({ severity: 'success', summary: 'Added to Cart', detail: `${numItemsAdded} items added to cart successfully! Remember to check out on the Kroger website.`, life: 5000 });
     } finally {
