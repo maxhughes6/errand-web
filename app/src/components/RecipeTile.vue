@@ -12,7 +12,9 @@ const props = defineProps({
     }
 });
 
-const isSaved = ref(false);
+const emit = defineEmits(['recipe-saved']);
+
+const isSaved = ref(props.recipe.isSaved ?? false);
 const isSaving = ref(false);
 
 async function handleSaveClick(event) {
@@ -23,6 +25,7 @@ async function handleSaveClick(event) {
     try {
         await recipesService.saveRecipe(props.recipe);
         isSaved.value = true;
+        emit('recipe-saved', props.recipe.recipeName);
         toast.add({
             severity: 'success',
             summary: 'Recipe Saved',
@@ -77,10 +80,6 @@ async function handleSaveClick(event) {
     cursor: pointer;
 }
 
-.recipe-tile:hover {
-    background-color: #f3f0ff;
-}
-
 .save-button {
     position: absolute;
     top: 1rem;
@@ -96,14 +95,13 @@ async function handleSaveClick(event) {
     color: #a08ccc;
     font-size: 1.1rem;
     cursor: pointer;
-    transition: color 0.15s ease, background-color 0.15s ease, transform 0.15s ease;
+    transition: color 0.15s ease, background-color 0.15s ease;
     z-index: 1;
 }
 
 .save-button:hover:not(:disabled) {
     color: #4713a3;
     background-color: #ede8fa;
-    transform: scale(1.1);
 }
 
 .save-button:focus-visible {

@@ -46,6 +46,13 @@ const closeRecipeDialog = () => {
   selectedRecipe.value = null;
 }
 
+const markRecipeSaved = (recipeName) => {
+  const recipe = recipes.value.find(r => r.recipeName === recipeName);
+  if (recipe) {
+    recipe.isSaved = true;
+  }
+}
+
 const removeDietaryPreference = (label) => {
   const index = dietaryPreferences.value.indexOf(label);
 
@@ -85,7 +92,7 @@ async function getRecipeSuggestions() {
   recipes.value = [];
 
   const generatedRecipes = await recipesService.generateRecipes(searchInput.value, dietaryPreferences.value);
-  recipes.value = generatedRecipes.recipes;
+  recipes.value = generatedRecipes.recipes.map(r => ({ ...r, isSaved: false }));
   loading.value = false;
 }
 </script>
@@ -111,7 +118,7 @@ async function getRecipeSuggestions() {
     </div>
     <loading-spinner v-if="loading" message="Generating recipe suggestions..." />
     <div class="recipe-suggestions-container" v-else-if="recipes">
-      <recipe-tile  v-for="recipe in recipes" :recipe="recipe" @click="openRecipeDialog(recipe)"/>
+      <recipe-tile v-for="recipe in recipes" :recipe="recipe" @click="openRecipeDialog(recipe)" @recipe-saved="markRecipeSaved"/>
     </div>
   </div>
 
@@ -119,7 +126,8 @@ async function getRecipeSuggestions() {
     :selectedRecipe="selectedRecipe"
     :dialogVisible="dialogVisible"
     :dietary-preferences="dietaryPreferences"
-    @close-dialog="closeRecipeDialog">
+    @close-dialog="closeRecipeDialog"
+    @recipe-saved="markRecipeSaved">
   </recipe-ingredients-dialog>
 </template>
 

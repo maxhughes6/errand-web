@@ -28,7 +28,7 @@ const isLoading = ref(false);
 const isAddingToCart = ref(false);
 const krogerConnected = ref(true);
 
-const emit = defineEmits(['close-dialog']);
+const emit = defineEmits(['close-dialog', 'recipe-saved']);
 
 const closeDialog = () => {
     ingredientsList.value = [];
@@ -104,6 +104,7 @@ async function handleAddItemsToCartClick() {
     try {
         await krogerService.addToCart(itemsToAdd);
         recipesService.saveRecipe(props.selectedRecipe).catch(() => {});
+        emit('recipe-saved', props.selectedRecipe.recipeName);
         closeDialog();
         toast.add({ severity: 'success', summary: 'Added to Cart', detail: `${numItemsAdded} items added to cart successfully! Remember to check out on the Kroger website.`, life: 5000 });
     } finally {
