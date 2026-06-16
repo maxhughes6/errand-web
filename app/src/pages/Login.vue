@@ -16,13 +16,13 @@ const features = [
     icon: "pi pi-sliders-h",
     title: "Respects Your Diet",
     description:
-      "Set your dietary preferences once and every recommendation will match — vegetarian, keto, gluten-free, and more.",
+      "Set your dietary preferences once and every recommendation will match.",
   },
   {
     icon: "pi pi-cart-arrow-down",
     title: "Add to Cart in One Click",
     description:
-      "Add all recipe ingredients to your Kroger cart with a single click. Connecting Kroger is optional and can be done after signing up.",
+      "Add all recipe ingredients to your Kroger cart with a single click.",
   },
   {
     icon: "pi pi-search",
@@ -73,7 +73,7 @@ onUnmounted(() => { if (intervalId) clearInterval(intervalId); });
           errand<span class="showcase-ai">ai</span>
         </h1>
         <p class="showcase-tagline">
-          Not sure what to make for dinner? We'll provide the recipe <strong class="showcase-inline-emphasis-text"><em>and</em></strong> fill your cart.
+          Not sure what to make for dinner? We'll provide the recipe <strong class="showcase-inline-emphasis-text">and</strong> fill your cart.
         </p>
       </div>
 
@@ -180,7 +180,7 @@ onUnmounted(() => { if (intervalId) clearInterval(intervalId); });
 }
 
 .showcase-inline-emphasis-text {
-  margin: 4px;
+  margin: 2px;
   text-decoration: underline;
 }
 
@@ -233,6 +233,7 @@ onUnmounted(() => { if (intervalId) clearInterval(intervalId); });
   font-size: var(--text-sm);
   color: var(--color-ink-2);
   line-height: 1.6;
+  overflow-wrap: break-word;
 }
 
 /* Dots */
