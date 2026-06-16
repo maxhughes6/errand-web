@@ -132,7 +132,7 @@ onUnmounted(() => { if (intervalId) clearInterval(intervalId); });
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
+  height: 100%;
   width: 100%;
   gap: 25px;
 }
@@ -150,7 +150,6 @@ onUnmounted(() => { if (intervalId) clearInterval(intervalId); });
   gap: var(--space-lg);
   max-height: 80vh;
   border-radius: var(--radius-card);
-  margin-left: 32px;
 }
 
 /* Brand */
