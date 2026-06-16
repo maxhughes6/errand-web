@@ -19,35 +19,49 @@ const hasInstructions = computed(() => Boolean(props.recipe.instructions));
 
 <template>
   <div class="recipe-card">
-    <h2>{{ recipe.recipeName }}</h2>
-    <div class="recipe-tags">
-      <span v-for="tag in recipe.tags" :key="`${recipeKey}-${tag}`" class="recipe-tag-pill">
-        {{ tag }}
-      </span>
-      <span v-if="!recipe.tags.length" class="recipe-tag-pill recipe-tag-pill-empty">
-        No tags
-      </span>
+    <div class="card-header">
+      <h2 class="card-title">{{ recipe.recipeName }}</h2>
+      <div class="card-tags">
+        <span v-for="tag in recipe.tags" :key="`${recipeKey}-${tag}`" class="card-tag">{{ tag }}</span>
+        <span v-if="!recipe.tags.length" class="card-tag card-tag--empty">No tags</span>
+      </div>
     </div>
-    <div class="recipe-ingredients">
-      <h3>Ingredients</h3>
-      <ul>
-        <li v-for="ingredient in recipe.ingredients" :key="`${recipeKey}-${ingredient.name}`">
+
+    <div class="card-ingredients">
+      <h3 class="ingredients-heading">Ingredients</h3>
+      <ul class="ingredients-list">
+        <li
+          v-for="ingredient in recipe.ingredients"
+          :key="`${recipeKey}-${ingredient.name}`"
+        >
           {{ ingredient.name }}: {{ ingredient.quantity }} {{ ingredient.unit }}
         </li>
       </ul>
-      <p v-if="!recipe.ingredients || !recipe.ingredients.length" class="ingredients-empty">No ingredients listed.</p>
+      <p v-if="!recipe.ingredients || !recipe.ingredients.length" class="ingredients-empty">
+        No ingredients listed.
+      </p>
     </div>
-    <div class="recipe-actions">
-      <button type="button" class="primary-action-button" @click="emit('add-ingredients', recipe)">
+
+    <div class="card-actions">
+      <button type="button" class="btn-primary" @click="emit('add-ingredients', recipe)">
         Add ingredients to cart
       </button>
-      <button v-if="!hasInstructions" type="button" class="secondary-action-button"
-        :disabled="isGeneratingInstructions" @click="emit('generate-instructions', recipe)">
-        <span v-if="isGeneratingInstructions" class="button-spinner" aria-hidden="true"></span>
-        {{ isGeneratingInstructions ? 'Generating instructions...' : 'Generate recipe instructions' }}
+      <button
+        v-if="!hasInstructions"
+        type="button"
+        class="btn-secondary"
+        :disabled="isGeneratingInstructions"
+        @click="emit('generate-instructions', recipe)"
+      >
+        <span v-if="isGeneratingInstructions" class="btn-spinner" aria-hidden="true"></span>
+        {{ isGeneratingInstructions ? 'Generating instructions…' : 'Generate recipe instructions' }}
       </button>
-      <button v-else type="button" class="secondary-action-button see-instructions-button"
-        @click="emit('view-instructions', recipe)">
+      <button
+        v-else
+        type="button"
+        class="btn-secondary btn-secondary--green"
+        @click="emit('view-instructions', recipe)"
+      >
         See instructions
       </button>
     </div>
@@ -58,150 +72,168 @@ const hasInstructions = computed(() => Boolean(props.recipe.instructions));
 .recipe-card {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  padding: 1.5rem;
+  gap: var(--space-md);
+  padding: var(--space-lg);
   min-height: 24rem;
-  border: 1px solid #e7dcf8;
-  border-radius: 14px;
-  background: #fcfbff;
+  background: var(--color-paper);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-card);
+  transition:
+    box-shadow var(--dur-short) var(--ease-out),
+    border-color var(--dur-micro) var(--ease-out);
 
-  h2 {
-    margin: 0;
-    color: #4713a3;
-    font-size: 1.4rem;
+  &:hover {
+    box-shadow: 0 6px 24px oklch(20% 0.012 50 / 0.07);
+    border-color: oklch(80% 0.012 85);
   }
 }
 
-.recipe-tags {
+/* ─── Header ─────────────────────────────────────────────── */
+.card-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.card-title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 600;
+  font-style: normal;
+  color: var(--color-ink);
+  margin: 0;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.card-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--space-2xs);
 }
 
-.recipe-tag-pill {
-  border: 1px solid #7062b5;
-  padding: 0.35rem 0.8rem;
-  border-radius: 999px;
-  background: #ece8ff;
-  color: #473c7a;
-  font-size: 0.92rem;
+.card-tag {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
   font-weight: 600;
   text-transform: capitalize;
-}
+  padding: 0.25rem 0.7rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-2-bg);
+  border: 1px solid var(--color-accent-2-border);
+  color: var(--color-accent-2);
 
-.recipe-tag-pill-empty {
-  border-style: dashed;
-  background: #f6f4ff;
-  color: #7d7398;
-}
-
-.recipe-ingredients {
-  h3 {
-    margin: 0 0 0.75rem 0;
-    color: #2d2352;
-    font-size: 1rem;
-  }
-
-  ul {
-    margin: 0;
-    padding-left: 1.25rem;
-    color: #44385f;
-  }
-
-  li + li {
-    margin-top: 0.35rem;
+  &--empty {
+    border-style: dashed;
+    background: var(--color-paper-2);
+    border-color: var(--color-rule);
+    color: var(--color-ink-2);
   }
 }
 
-.recipe-actions {
+/* ─── Ingredients ─────────────────────────────────────────── */
+.card-ingredients { flex: 1; }
+
+.ingredients-heading {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-ink-2);
+  margin: 0 0 var(--space-xs);
+}
+
+.ingredients-list {
+  margin: 0;
+  padding-left: var(--space-md);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  line-height: 1.55;
+
+  li + li { margin-top: var(--space-3xs); }
+}
+
+.ingredients-empty {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-ink-2);
+  font-style: italic;
+  margin: 0;
+}
+
+/* ─── Actions ─────────────────────────────────────────────── */
+.card-actions {
   margin-top: auto;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  padding-top: 0.5rem;
+  gap: var(--space-sm);
+  padding-top: var(--space-xs);
 }
 
-.primary-action-button,
-.secondary-action-button {
+.btn-primary,
+.btn-secondary {
   width: 100%;
-  padding: 0.8rem 1.1rem;
-  border-radius: 999px;
+  padding: 0.95rem 1.4rem;
+  border-radius: var(--radius-btn);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  font: inherit;
-  font-weight: 600;
+  gap: var(--space-xs);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: 700;
   cursor: pointer;
-  transition: transform 160ms ease, box-shadow 160ms ease, background-color 160ms ease, border-color 160ms ease;
+  box-shadow: 0 4px 14px oklch(20% 0.012 50 / 0.10);
+  transition: background-color var(--dur-micro) var(--ease-out);
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 3px;
+  }
 }
 
-.primary-action-button:hover,
-.secondary-action-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 22px rgba(71, 19, 163, 0.14);
-}
-
-.primary-action-button {
+.btn-primary {
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
   border: none;
-  background: #4713a3;
-  color: #fff;
 
-  &:hover {
-    background: #5a21c0;
+  &:hover:not(:disabled) { background: oklch(54% 0.22 42); }
+}
+
+.btn-secondary {
+  background: var(--color-paper-2);
+  border: 1px solid var(--color-rule);
+  color: var(--color-ink);
+
+  &:hover:not(:disabled) { background: oklch(88% 0.018 88); }
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.7;
+  }
+
+  &--green {
+    background: var(--color-accent-2-bg);
+    border-color: var(--color-accent-2-border);
+    color: var(--color-accent-2);
+
+    &:hover:not(:disabled) { background: oklch(87% 0.09 148); }
   }
 }
 
-.secondary-action-button {
-  border: 1px solid #cbb8ef;
-  background: #f4efff;
-  color: #4713a3;
-
-  &:hover {
-    border-color: #b08fe6;
-    background: #ede4ff;
-  }
-}
-
-.secondary-action-button:disabled {
-  cursor: wait;
-  opacity: 0.8;
-}
-
-.see-instructions-button {
-  border-color: #1f8f4d;
-  background: #e6f6ec;
-  color: #11452d;
-
-  &:hover {
-    border-color: #18713d;
-    background: #d4efde;
-  }
-}
-
-.secondary-action-button:disabled:hover {
-  transform: none;
-  box-shadow: none;
-}
-
-.button-spinner {
+/* ─── Spinner ─────────────────────────────────────────────── */
+.btn-spinner {
   width: 1rem;
   height: 1rem;
-  border: 2px solid rgba(71, 19, 163, 0.18);
-  border-top-color: #4713a3;
+  border: 2px solid var(--color-accent-dim);
+  border-top-color: var(--color-accent);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
 
-.ingredients-empty {
-  margin: 0;
-  color: #7d7398;
-  font-style: italic;
-}
-
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 </style>

@@ -12,52 +12,64 @@ const formatLabel = (value) => value.replaceAll('-', ' ');
 </script>
 
 <template>
-  <div class="dietary-preference-tab">
-    <span class="label">{{ formatLabel(label) }}</span>
+  <div class="pref-tag">
+    <span class="pref-label">{{ formatLabel(label) }}</span>
     <button
-      class="dismiss-button"
+      class="pref-dismiss"
       type="button"
       aria-label="Remove dietary preference"
       @click="emit('close', label)"
     >
-      <span aria-hidden="true" class="dismiss-button-icon">&times;</span>
+      <i class="pi pi-times" aria-hidden="true"></i>
     </button>
   </div>
 </template>
 
 <style scoped lang="scss">
-.dietary-preference-tab {
+.pref-tag {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 10px 8px 14px;
-  border-radius: 999px;
-  background: #efe8ff;
-  border: 1px solid #d7c6ff;
-  color: #4713a3;
+  gap: var(--space-xs);
+  padding: var(--space-2xs) var(--space-2xs) var(--space-2xs) var(--space-sm);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-2-bg);
+  border: 1px solid var(--color-accent-2-border);
+  color: var(--color-accent-2);
+  font-family: var(--font-body);
 }
 
-.label {
-  font-size: 0.95rem;
+.pref-label {
+  font-size: var(--text-sm);
+  font-weight: 600;
   line-height: 1;
   text-transform: capitalize;
 }
 
-.dismiss-button {
-  width: 24px;
-  height: 24px;
+.pref-dismiss {
+  width: 22px;
+  height: 22px;
   border: none;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: inherit;
+  background: oklch(64% 0.13 148 / 0.15);
+  color: var(--color-accent-2);
   cursor: pointer;
   padding: 0;
-  background: #efe8ff;
-}
+  font-size: 0.65rem;
+  transition:
+    background var(--dur-micro) var(--ease-out),
+    color var(--dur-micro) var(--ease-out);
 
-.dismiss-button-icon {
-  font-size: 32px;
+  &:hover {
+    background: var(--color-accent-2);
+    color: #fff;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
 }
 </style>

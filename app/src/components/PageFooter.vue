@@ -1,24 +1,49 @@
-
 <template>
-    <footer id="footer">
-      <div>© 2026 ErrandAI. Made with AI assistance by Max Hughes. All rights reserved.</div>
-      <br>
-      <div>This project is only intended for the sake of demonstration and personal skillbuilding, and is not a commercial product.</div>
-    </footer>
+  <footer id="footer" aria-label="Site footer">
+    <hr class="footer-rule" aria-hidden="true" />
+    <div class="footer-line">
+      <span>© 2026 ErrandAI</span>
+      <span class="footer-sep" aria-hidden="true">·</span>
+      <span>Built by Max Hughes</span>
+      <span class="footer-sep" aria-hidden="true">·</span>
+      <span class="footer-note">Demonstration project only — not a commercial product</span>
+    </div>
+  </footer>
 </template>
 
-<style>
+<style scoped>
 #footer {
-  width: 100vw;
-  background: linear-gradient(90deg, #4713a3 60%, #6e3ff3 100%);
-  color: #fff;
-  text-align: center;
-  padding-block: 50px;
-  font-size: 1rem;
-  font-family: "Montserrat", sans-serif;
-  box-shadow: 0 -2px 16px 0 rgba(71, 19, 163, 0.10);
-  border-radius: 18px 18px 0 0;
+  width: 100%;
+  padding: 0 var(--space-lg) var(--space-md);
   flex-shrink: 0;
-  margin-top: 200px;
+}
+
+.footer-rule {
+  border: none;
+  border-top: 1px solid var(--color-rule);
+  margin: 0 0 var(--space-sm) 0;
+}
+
+.footer-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-ink-2);
+}
+
+.footer-sep {
+  color: var(--color-rule);
+  user-select: none;
+}
+
+.footer-note {
+  font-style: italic;
+}
+
+@media (max-width: 640px) {
+  .footer-note { display: none; }
 }
 </style>

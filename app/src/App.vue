@@ -35,18 +35,18 @@ onUnmounted(() => window.removeEventListener('session-expired', handleSessionExp
 <style scoped>
 #app-wrapper {
   min-height: 100vh;
-  height: 100vh;
   display: flex;
   flex-direction: column;
+  background: var(--color-paper);
 }
+
 #page-container {
   flex: 1 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
-  padding: 3.5rem 0 3.5rem 0;
+  padding-top: var(--nav-height);
   box-sizing: border-box;
-
 }
 </style>

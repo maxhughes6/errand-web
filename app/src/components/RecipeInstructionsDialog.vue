@@ -2,223 +2,190 @@
 import { Recipe } from '../models';
 
 defineProps<{
-    selectedRecipe: Recipe;
-    dialogVisible: boolean;
+  selectedRecipe: Recipe;
+  dialogVisible: boolean;
 }>();
 
 const emit = defineEmits(['close-dialog']);
 
-const closeDialog = () => {
-    emit('close-dialog');
-};
+const closeDialog = () => { emit('close-dialog'); };
 </script>
 
 <template>
-    <div v-if="dialogVisible && selectedRecipe" class="instructions-dialog-overlay" @click.self="closeDialog">
-        <section class="instructions-dialog" role="dialog" aria-modal="true"
-            aria-labelledby="instructions-dialog-title">
-            <div class="instructions-dialog-shell">
-                <header class="instructions-dialog-header">
-                    <div class="instructions-icon" aria-hidden="true">
-                        <i class="pi pi-book"></i>
-                    </div>
-                    <div class="instructions-dialog-heading">
-                        <h2 id="instructions-dialog-title">
-                            {{ selectedRecipe.recipeName }} instructions
-                        </h2>
-                    </div>
-                </header>
+  <div
+    v-if="dialogVisible && selectedRecipe"
+    class="dialog-overlay"
+    @click.self="closeDialog"
+  >
+    <section
+      class="dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="instructions-dialog-title"
+    >
+      <!-- Header -->
+      <header class="dialog-header">
+        <div class="book-icon" aria-hidden="true">
+          <i class="pi pi-book"></i>
+        </div>
+        <h2 id="instructions-dialog-title" class="dialog-title">
+          {{ selectedRecipe.recipeName }}
+        </h2>
+      </header>
 
-                <div class="instructions-dialog-body">
-                    <p v-if="selectedRecipe.instructions" class="instructions-content">
-                        {{ selectedRecipe.instructions }}
-                    </p>
-                    <p v-else class="empty-state">
-                        No instructions available for this recipe yet.
-                    </p>
-                </div>
+      <!-- Body -->
+      <div class="dialog-body">
+        <p v-if="selectedRecipe.instructions" class="instructions-text">
+          {{ selectedRecipe.instructions }}
+        </p>
+        <p v-else class="empty-state">
+          No instructions available for this recipe yet.
+        </p>
+      </div>
 
-                <footer class="instructions-dialog-footer">
-                    <button type="button" class="dialog-button secondary" @click="closeDialog()">
-                        Close
-                    </button>
-                </footer>
-            </div>
-        </section>
-    </div>
+      <!-- Footer -->
+      <footer class="dialog-footer">
+        <button type="button" class="close-btn" @click="closeDialog()">
+          Close
+        </button>
+      </footer>
+    </section>
+  </div>
 </template>
 
 <style scoped lang="scss">
-.instructions-dialog-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 1200;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1.5rem;
-    background: rgba(29, 16, 48, 0.42);
-    backdrop-filter: blur(6px);
+/* ─── Overlay ─────────────────────────────────────────────── */
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-lg);
+  background: oklch(20% 0.012 50 / 0.48);
+  backdrop-filter: blur(6px);
 }
 
-.instructions-dialog {
-    width: min(100%, 46rem);
-    max-height: min(88vh, 54rem);
-    border-radius: 28px;
-    background: #ffffff;
-    box-shadow: 0 24px 60px rgba(41, 23, 74, 0.2);
-    overflow: hidden;
+/* ─── Dialog shell ───────────────────────────────────────── */
+.dialog {
+  width: min(100%, 46rem);
+  max-height: min(88vh, 54rem);
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px;
+  background: var(--color-paper);
+  border: 1px solid var(--color-rule);
+  box-shadow: 0 24px 60px oklch(20% 0.012 50 / 0.14);
+  overflow: hidden;
 }
 
-.instructions-dialog-shell {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    max-height: min(88vh, 54rem);
+/* ─── Header ─────────────────────────────────────────────── */
+.dialog-header {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-2xl) var(--space-xl) var(--space-lg);
+  text-align: center;
 }
 
-.instructions-dialog-header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1.25rem;
-    padding: 2.75rem 2.5rem 1.5rem;
-    text-align: center;
+.book-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.25rem;
+  height: 4.25rem;
+  border-radius: 50%;
+  background: var(--color-accent-dim);
+  border: 1px solid oklch(62% 0.22 42 / 0.25);
+  color: var(--color-accent);
+  font-size: 1.9rem;
 }
 
-.instructions-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 4.75rem;
-    height: 4.75rem;
-    border-radius: 999px;
-    background: linear-gradient(135deg, #4713a3 0%, #6f38d8 100%);
-    box-shadow: 0 14px 30px rgba(71, 19, 163, 0.28);
-    color: #ffffff;
-    font-size: 2rem;
+.dialog-title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 600;
+  font-style: normal;
+  color: var(--color-ink);
+  letter-spacing: -0.02em;
+  margin: 0;
 }
 
-.instructions-dialog-heading {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-
-    h2 {
-        margin: 0;
-        color: #2f1760;
-        font-family: "Montserrat", sans-serif;
-        font-size: 2rem;
-        font-weight: 700;
-    }
+/* ─── Body ───────────────────────────────────────────────── */
+.dialog-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-lg) var(--space-xl);
 }
 
-.instructions-dialog-body {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    padding: 0 2.5rem 1.5rem;
-}
-
-.instructions-content {
-    margin: 0;
-    color: #325342;
-    font-family: "Montserrat", sans-serif;
-    font-size: 1.05rem;
-    line-height: 1.7;
-    white-space: pre-wrap;
+.instructions-text {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--color-ink);
+  line-height: 1.75;
+  white-space: pre-wrap;
+  margin: 0;
 }
 
 .empty-state {
-    margin: 0;
-    border-radius: 20px;
-    padding: 1.2rem;
-    background: #faf7ff;
-    color: #5b5170;
-    font-family: "Montserrat", sans-serif;
-    text-align: center;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--color-ink-2);
+  text-align: center;
+  padding: var(--space-lg);
+  background: var(--color-paper-2);
+  border-radius: var(--radius-card);
+  margin: 0;
 }
 
-.instructions-dialog-footer {
-    flex-shrink: 0;
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.9rem;
-    padding: 1rem 2.5rem 1.5rem;
-    background: #ffffff;
+/* ─── Footer ─────────────────────────────────────────────── */
+.dialog-footer {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: flex-end;
+  padding: var(--space-md) var(--space-xl);
 }
 
-.dialog-button {
-    border-radius: 16px;
-    padding: 0.95rem 1.4rem;
-    font-family: "Montserrat", sans-serif;
-    font-size: 0.98rem;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 10px 22px rgba(41, 23, 74, 0.12);
-    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+.close-btn {
+  padding: 0.95rem 1.4rem;
+  border-radius: var(--radius-btn);
+  border: 1px solid var(--color-rule);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px oklch(20% 0.012 50 / 0.10);
+  transition: background-color var(--dur-micro) var(--ease-out);
 
-    &:focus-visible {
-        outline: 3px solid rgba(111, 56, 216, 0.2);
-        outline-offset: 3px;
-    }
+  &:hover { background: oklch(88% 0.018 88); }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 3px;
+  }
 }
 
-.dialog-button.primary {
-    border: none;
-    background: linear-gradient(135deg, #4713a3 0%, #6f38d8 100%);
-    color: #ffffff;
-    box-shadow: 0 14px 30px rgba(71, 19, 163, 0.28);
-
-    &:hover {
-        box-shadow: 0 18px 34px rgba(71, 19, 163, 0.32);
-        transform: translateY(-1px);
-    }
-}
-
-.dialog-button.secondary {
-    border: 1px solid #d8c9f8;
-    background: #ffffff;
-    color: #4f2a9d;
-    box-shadow: 0 10px 24px rgba(71, 19, 163, 0.18);
-
-    &:hover {
-        background: #f7f2ff;
-        border-color: #bea5f2;
-        box-shadow: 0 14px 28px rgba(71, 19, 163, 0.22);
-        transform: translateY(-1px);
-    }
-}
-
+/* ─── Responsive ─────────────────────────────────────────── */
 @media (max-width: 640px) {
-    .instructions-dialog {
-        width: min(100%, 34rem);
-        max-height: min(92vh, 54rem);
-    }
+  .dialog {
+    width: min(100%, 34rem);
+    max-height: min(92vh, 54rem);
+  }
 
-    .instructions-dialog-header {
-        padding: 2rem 1.25rem 1.25rem;
+  .dialog-header { padding: var(--space-xl) var(--space-md) var(--space-md); }
+  .dialog-title { font-size: var(--text-lg); }
+  .dialog-body { padding: var(--space-md); }
 
-        h2 {
-            font-size: 1.6rem;
-        }
-    }
+  .dialog-footer {
+    padding: var(--space-md);
 
-    .instructions-dialog-body {
-        padding: 0 1.25rem 1.25rem;
-    }
-
-    .instructions-dialog-footer {
-        padding: 1rem 1.25rem 1.25rem;
-        background: none;
-        background-color: transparent;
-    }
-
-    .dialog-button {
-        width: 100%;
-    }
+    .close-btn { width: 100%; justify-content: center; }
+  }
 }
 </style>

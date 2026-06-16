@@ -48,11 +48,7 @@ const openInstructionsDialog = (recipe: Recipe) => {
 
 const closeInstructionsDialog = () => {
   isInstructionsDialogVisible.value = false;
-  selectedInstructionsRecipe.value = {
-    recipeName: '',
-    tags: [],
-    ingredients: []
-  };
+  selectedInstructionsRecipe.value = { recipeName: '', tags: [], ingredients: [] };
 };
 
 const addIngredientsToCart = (recipe: Recipe) => {
@@ -62,11 +58,7 @@ const addIngredientsToCart = (recipe: Recipe) => {
 
 const closeRecipeDialog = () => {
   isRecipeDialogVisible.value = false;
-  selectedRecipe.value = {
-    recipeName: '',
-    tags: [],
-    ingredients: []
-  };
+  selectedRecipe.value = { recipeName: '', tags: [], ingredients: [] };
 };
 
 onMounted(async () => {
@@ -81,89 +73,115 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="page-container">
-    <div class="page-content">
-      <h1>{{ userState.getUser()?.preferredName }}'s Recipes</h1>
-      <p class="page-description">Here are your saved recipes! When you generate new recipes, they will be saved here
-        automatically.</p>
-      <LoadingSpinner v-if="isLoading" message="Loading your saved recipes..." />
-      <div v-else-if="recipes.length" class="recipes-list">
-        <RecipeCard v-for="recipe in recipes" :key="recipe.recipeId ?? recipe.recipeName" :recipe="recipe"
-          :is-generating-instructions="isGeneratingInstructions(recipe)"
-          @add-ingredients="addIngredientsToCart"
-          @generate-instructions="generateInstructions"
-          @view-instructions="openInstructionsDialog" />
-      </div>
-      <div v-else class="empty-state">
-        <p>Looks like you don't have any saved recipes yet. Generate some recipes on the Recipes tab and they will be
-          saved here automatically!</p>
-      </div>
+  <div class="my-recipes-page">
+    <header class="page-header">
+      <h1 class="page-heading">{{ userState.getUser()?.preferredName }}'s Recipes</h1>
+      <p class="page-sub">Here are your saved recipes. When you generate new recipes, they'll be saved here automatically.</p>
+    </header>
+
+    <LoadingSpinner v-if="isLoading" message="Loading your saved recipes…" />
+
+    <div v-else-if="recipes.length" class="recipes-grid">
+      <RecipeCard
+        v-for="recipe in recipes"
+        :key="recipe.recipeId ?? recipe.recipeName"
+        :recipe="recipe"
+        :is-generating-instructions="isGeneratingInstructions(recipe)"
+        @add-ingredients="addIngredientsToCart"
+        @generate-instructions="generateInstructions"
+        @view-instructions="openInstructionsDialog"
+      />
     </div>
 
-    <RecipeIngredientsDialog :selectedRecipe="selectedRecipe" :dialogVisible="isRecipeDialogVisible"
-      :dietaryPreferences="dietaryPreferences" @close-dialog="closeRecipeDialog" />
+    <div v-else class="empty-state">
+      <i class="pi pi-bookmark empty-icon" aria-hidden="true"></i>
+      <p class="empty-text">
+        No saved recipes yet. Generate recipes on the Recipes tab and they'll be saved here automatically.
+      </p>
+    </div>
 
-    <RecipeInstructionsDialog :selectedRecipe="selectedInstructionsRecipe"
-      :dialogVisible="isInstructionsDialogVisible" @close-dialog="closeInstructionsDialog" />
+    <RecipeIngredientsDialog
+      :selectedRecipe="selectedRecipe"
+      :dialogVisible="isRecipeDialogVisible"
+      :dietaryPreferences="dietaryPreferences"
+      @close-dialog="closeRecipeDialog"
+    />
+    <RecipeInstructionsDialog
+      :selectedRecipe="selectedInstructionsRecipe"
+      :dialogVisible="isInstructionsDialogVisible"
+      @close-dialog="closeInstructionsDialog"
+    />
   </div>
 </template>
 
 <style scoped lang="scss">
-.page-container {
+.my-recipes-page {
+  width: 100%;
+  max-width: 1100px;
+  padding: var(--space-2xl) var(--space-lg) var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+/* ─── Header ─────────────────────────────────────────────── */
+.page-heading {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  font-style: normal;
+  color: var(--color-ink);
+  letter-spacing: -0.02em;
+  margin: 0 0 var(--space-2xs);
+}
+
+.page-sub {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--color-ink-2);
+  margin: 0;
+}
+
+/* ─── Grid ───────────────────────────────────────────────── */
+.recipes-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-md);
+}
+
+/* ─── Empty state ────────────────────────────────────────── */
+.empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 100%;
-  padding: 2rem;
-  font-family: "Montserrat", sans-serif;
-}
-
-.page-content {
-  width: 100%;
-  max-width: 1100px;
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 4px 24px 0 rgba(71, 19, 163, 0.10), 0 1.5px 6px 0 rgba(71, 19, 163, 0.08);
-  padding: 2.5rem;
-
-  h1 {
-    color: #4713a3;
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin: 0 0 0.5rem 0;
-    font-family: "Montserrat", sans-serif;
-  }
-
-  .page-description {
-    color: #5d4a7a;
-    font-size: 1.1rem;
-    margin: 0 0 2rem 0;
-  }
-}
-
-.empty-state {
-  padding: 3rem 2rem;
+  gap: var(--space-md);
+  padding: var(--space-2xl) var(--space-xl);
   text-align: center;
-  border: 2px dashed #e0d4f7;
-  border-radius: 12px;
-  background: #f9f7ff;
-
-  p {
-    color: #5d4a7a;
-    font-size: 1rem;
-    margin: 0;
-  }
+  border: 2px dashed var(--color-rule);
+  border-radius: var(--radius-card);
+  background: var(--color-paper-2);
 }
 
-.recipes-list {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.5rem;
+.empty-icon {
+  font-size: 2rem;
+  color: var(--color-ink-2);
+  opacity: 0.5;
 }
 
+.empty-text {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--color-ink-2);
+  margin: 0;
+  max-width: 48ch;
+}
+
+/* ─── Responsive ─────────────────────────────────────────── */
 @media (max-width: 900px) {
-  .recipes-list {
-    grid-template-columns: 1fr;
-  }
+  .recipes-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 600px) {
+  .my-recipes-page { padding: var(--space-xl) var(--space-md) var(--space-lg); }
 }
 </style>

@@ -1,263 +1,247 @@
 <script setup>
 import { useRouter } from 'vue-router';
-import { onMounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import { Button, Menu } from 'primevue';
 import { amplifyAuthService } from '../amplify/amplifyAuthService';
 import { userState } from '../state/userState';
 import { krogerStores } from '../constants';
 
-
 const router = useRouter();
-
-function handleBrandClick() {
-    router.push('/home');
-}
-
-const isLoggedIn = ref(false);
-
 const menu = ref();
+const scrolled = ref(false);
 
 const handleCartClick = () => {
-    const userPreferredStore = userState.getUser().errandUserData.preferredStore;
-    const cartUrl = krogerStores[userPreferredStore].cartUrl;
-    window.open(cartUrl, '_blank');
+  const userPreferredStore = userState.getUser().errandUserData.preferredStore;
+  const cartUrl = krogerStores[userPreferredStore].cartUrl;
+  window.open(cartUrl, '_blank');
 };
 
-const handleMyRecipes = () => {
-    router.push('/my-recipes');
-};
+const handleMyRecipes = () => router.push('/my-recipes');
 
 const handleLogout = async () => {
-    try {
-        await amplifyAuthService.logout();
-        userState.clearUser();
-        window.sessionStorage.clear();
-        router.push('/login');
-    } catch (error) {
-        userState.clearUser();
-        window.sessionStorage.clear();
-        router.push('/login');
-    }
+  try {
+    await amplifyAuthService.logout();
+  } finally {
+    userState.clearUser();
+    window.sessionStorage.clear();
+    router.push('/login');
+  }
 };
 
 const items = ref([
-    {
-        items: [
-            {
-                label: 'My Cart',
-                icon: 'pi pi-shopping-cart',
-                command: handleCartClick
-            },
-            {
-                label: 'My recipes',
-                icon: 'pi pi-bookmark-fill',
-                command: handleMyRecipes
-            },
-            {
-                label: 'Log out',
-                icon: 'pi pi-sign-out',
-                command: handleLogout
-            },
-        ]
-    }
+  {
+    items: [
+      { label: 'My Cart',    icon: 'pi pi-shopping-cart', command: handleCartClick },
+      { label: 'My recipes', icon: 'pi pi-bookmark-fill', command: handleMyRecipes },
+      { label: 'Log out',    icon: 'pi pi-sign-out',      command: handleLogout },
+    ]
+  }
 ]);
 
-const toggle = (event) => {
-    menu.value.toggle(event);
-};
+const toggle = (event) => menu.value.toggle(event);
 
-onMounted(() => {
-    const krogerAuthCode = window.sessionStorage.getItem('authenticatedAccessToken');
-    isLoggedIn.value = !!krogerAuthCode;
-})
+const onScroll = () => { scrolled.value = window.scrollY > 8; };
+onMounted(() => window.addEventListener('scroll', onScroll, { passive: true }));
+onUnmounted(() => window.removeEventListener('scroll', onScroll));
 </script>
 
 <template>
-    <nav id="header">
-        <div id="brand" @click="handleBrandClick()">
-            <svg class="brand-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                <path d="M16 10a4 4 0 01-8 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-            <h1>ErrandAI</h1>
-        </div>
-        <div class="nav-center">
-            <router-link class="navigation-link" to="/home">Home</router-link>
-            <router-link class="navigation-link" to="/recipes">Recipes</router-link>
-            <router-link class="navigation-link" to="/browse">Browse</router-link>
-        </div>
-        <div class="nav-profile">
-            <Button type="button" icon="pi pi-user" @click="toggle" aria-haspopup="true" aria-controls="overlay_menu" label="My profile" style="font-size: 1.1rem" />
-            <Menu ref="menu" id="overlay_menu" :model="items" :popup="true" />
-        </div>
-    </nav>
+  <nav id="nav" :class="{ 'nav--scrolled': scrolled }" aria-label="Main navigation">
+    <!-- Brand (left) -->
+    <button class="nav-brand" @click="router.push('/home')" aria-label="Go to home">
+      <i class="pi pi-shopping-cart nav-brand__icon" aria-hidden="true"></i>
+      <span class="nav-brand__text">
+        errand<span class="nav-brand__ai">ai</span>
+      </span>
+    </button>
+
+    <!-- Links (centre) -->
+    <div class="nav-links" role="list">
+      <router-link class="nav-link" to="/home"    role="listitem">Home</router-link>
+      <router-link class="nav-link" to="/recipes" role="listitem">Recipes</router-link>
+      <router-link class="nav-link" to="/browse"  role="listitem">Browse</router-link>
+    </div>
+
+    <!-- Profile (right) -->
+    <div class="nav-actions">
+      <Button
+        type="button"
+        icon="pi pi-user"
+        label="My profile"
+        class="nav-profile-btn"
+        @click="toggle"
+        aria-haspopup="true"
+        aria-controls="nav_menu"
+      />
+      <Menu ref="menu" id="nav_menu" :model="items" :popup="true" />
+    </div>
+  </nav>
 </template>
 
 <style scoped lang="scss">
-#header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 80px;
-    background: linear-gradient(90deg, #4713a3 60%, #6e3ff3 100%);
-    color: white;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    border-radius: 0 0 18px 18px;
-    padding: 0 10px;
-    box-shadow: 0 2px 16px 0 rgba(71, 19, 163, 0.10);
-    z-index: 100;
-    font-family: "Montserrat", sans-serif;
+#nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--nav-height);
+  background: var(--color-paper);
+  border-bottom: 1px solid var(--color-rule);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 0 var(--space-lg);
+  z-index: var(--z-nav);
+  transition: box-shadow var(--dur-short) var(--ease-out);
 }
 
-#brand {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 0.75rem;
-    margin: 0;
-    cursor: pointer;
-    user-select: none;
-    letter-spacing: 3px;
-
-    h1 {
-        font-size: 2rem;
-        font-family: "Montserrat", sans-serif;
-        font-weight: 800;
-        letter-spacing: 2px;
-        margin: 0;
-        color: #ffffff;
-        transition: color 0.2s;
-    }
-
-    .brand-icon {
-        width: 1.75rem;
-        height: 1.75rem;
-        color: #c9b8ff;
-        flex-shrink: 0;
-        transition: color 0.2s, transform 0.2s;
-    }
-
-    &:hover {
-        h1 {
-            color: #c9b8ff;
-        }
-
-        .brand-icon {
-            color: #ffffff;
-            transform: rotate(-8deg) scale(1.1);
-        }
-    }
+#nav.nav--scrolled {
+  box-shadow: 0 2px 16px oklch(20% 0.012 50 / 0.06);
 }
 
-.nav-center {
-    display: flex;
-    flex: 1;
-    justify-content: center;
-    align-items: center;
-    gap: 2.5rem;
+/* ─── Brand ──────────────────────────────────────────────── */
+.nav-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-2xs) 0;
+  text-decoration: none;
+  justify-self: start;
 }
 
-.navigation-link {
-    color: white;
-    text-decoration: none;
-    font-size: 1.15rem;
-    font-weight: 500;
-    padding: 0.5rem 1.2rem;
-    border-radius: 8px;
-    transition: background 0.18s, color 0.18s, box-shadow 0.18s;
-    position: relative;
-    font-family: "Montserrat", sans-serif;
+.nav-brand__icon {
+  font-size: 1.35rem;
+  color: var(--color-accent);
+  transition: transform var(--dur-short) var(--ease-out);
 }
 
-.navigation-link:hover,
-.navigation-link.router-link-exact-active {
-    background: rgba(255, 255, 255, 0.13);
-    color: #fff;
-    box-shadow: 0 2px 8px 0 rgba(71, 19, 163, 0.10);
-    text-decoration: none;
+.nav-brand:hover .nav-brand__icon {
+  transform: rotate(-8deg) scale(1.1);
 }
 
-.nav-profile {
-    font-size: 1.1rem;
-    font-weight: 500;
-    background: rgba(255, 255, 255, 0.10);
-    padding: 0.5rem 1.2rem;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.18s;
-    user-select: none;
-    font-family: "Montserrat", sans-serif;
-    margin-right: 20px;
+.nav-brand__text {
+  font-family: var(--font-body);
+  font-weight: 900;
+  font-size: 1.45rem;
+  letter-spacing: -0.03em;
+  color: var(--color-ink);
+  line-height: 1;
 }
 
-.nav-profile:hover {
-    background: rgba(255, 255, 255, 0.18);
+.nav-brand__ai {
+  color: var(--color-accent);
 }
 
-.nav-profile .p-button {
-    gap: 10px;
+/* ─── Links ──────────────────────────────────────────────── */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  justify-self: center;
 }
 
+.nav-link {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--text-base);
+  color: var(--color-ink-2);
+  text-decoration: none;
+  padding: var(--space-2xs) var(--space-sm);
+  border-radius: var(--radius-btn);
+  transition:
+    color var(--dur-micro) var(--ease-out),
+    background-color var(--dur-micro) var(--ease-out);
+  white-space: nowrap;
+
+  &:hover {
+    color: var(--color-ink);
+    background: var(--color-paper-2);
+  }
+
+  &.router-link-exact-active {
+    color: var(--color-accent);
+    background: var(--color-accent-dim);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+}
+
+/* ─── Actions ────────────────────────────────────────────── */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  justify-self: end;
+}
+
+/* override global .p-button for the nav profile button */
+.nav-profile-btn.p-button {
+  background: transparent;
+  border: 1px solid var(--color-rule);
+  color: var(--color-ink);
+  font-size: var(--text-sm);
+  padding: var(--space-2xs) var(--space-sm);
+  border-radius: var(--radius-btn);
+  gap: 5px;
+
+  &:hover {
+    background: var(--color-paper-2);
+    border-color: var(--color-ink-2);
+    box-shadow: none;
+    transform: none;
+  }
+}
+
+/* ─── Responsive ─────────────────────────────────────────── */
+@media (max-width: 640px) {
+  #nav {
+    grid-template-columns: 1fr auto;
+    padding: 0 var(--space-md);
+  }
+
+  .nav-links { display: none; }
+}
 </style>
 
 <style lang="scss">
-/* Global styles for overlay menu (renders outside component scope) */
-#overlay_menu {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 16px rgba(71, 19, 163, 0.15);
-    border: 1px solid rgba(71, 19, 163, 0.08);
-    padding: 5px;
-    min-width: 200px;
-    margin-top: 0.5rem;
+/* Global: overlay menu renders outside component scope */
+#nav_menu {
+  background: var(--color-paper);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-card);
+  box-shadow: 0 8px 24px oklch(20% 0.012 50 / 0.10);
+  padding: var(--space-2xs);
+  min-width: 200px;
+  margin-top: var(--space-2xs);
 
-    #overlay_menu_list {
-        margin-bottom: 10px;
+  #nav_menu_list { margin-bottom: var(--space-2xs); }
+
+  .p-menu-item-link {
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-btn);
+    transition: background-color var(--dur-micro) var(--ease-out);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    text-decoration: none;
+
+    &:hover {
+      background: var(--color-paper-2);
+      .p-menu-item-text { color: var(--color-ink); }
     }
+  }
 
-    .p-menu-item-link {
-        padding: 0.75rem 1rem;
-        border-radius: 8px;
-        transition: background 0.18s, color 0.18s;
-        color: #333;
-        font-family: "Montserrat", sans-serif;
-        font-size: 1rem;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
+  .p-menu-item-icon { color: var(--color-accent); font-size: 1rem; }
+  .p-menu-item-text { color: var(--color-ink); font-weight: 500; }
 
-    .p-menu-item-link:hover {
-        background: rgba(71, 19, 163, 0.08);
-        color: #4713a3;
-
-        .p-menu-item-text {
-            color: #4713a3;
-        }
-    }
-
-    .p-menu-item-icon {
-        color: #4713a3;
-        font-size: 1.1rem;
-    }
-
-    .p-menu-item-text {
-        color: #333;
-        font-weight: 500;
-    }
-
-    // Red icon for logout (last item)
-    .p-menu-item:last-child .p-menu-item-icon {
-        color: #d32f2f;
-    }
-
-    .p-menu-item:last-child .p-menu-item-link:hover .p-menu-item-icon {
-        color: #c62828;
-    }
+  .p-menu-item:last-child .p-menu-item-icon { color: var(--color-error); }
 }
 </style>

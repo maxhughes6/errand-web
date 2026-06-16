@@ -8,18 +8,18 @@ import { sessionState, userState } from '../state';
 const toast = useToast();
 
 const props = defineProps({
-    selectedRecipe: {
-        type: Object,
-        required: true
-    },
-    dialogVisible: {
-        type: Boolean,
-        required: true
-    },
-    dietaryPreferences: {
-        type: Array,
-        default: () => []
-    }
+  selectedRecipe: {
+    type: Object,
+    required: true
+  },
+  dialogVisible: {
+    type: Boolean,
+    required: true
+  },
+  dietaryPreferences: {
+    type: Array,
+    default: () => []
+  }
 });
 
 const ingredientsList = ref([]);
@@ -31,518 +31,537 @@ const krogerConnected = ref(true);
 const emit = defineEmits(['close-dialog']);
 
 const closeDialog = () => {
-    ingredientsList.value = [];
-    numberOfItems.value = 0;
-    emit('close-dialog');
+  ingredientsList.value = [];
+  numberOfItems.value = 0;
+  emit('close-dialog');
 };
 
 watch(() => props.dialogVisible, async (isVisible) => {
-    if (isVisible) {
-        krogerConnected.value = sessionState.getIsKrogerAccountConnected();
+  if (isVisible) {
+    krogerConnected.value = sessionState.getIsKrogerAccountConnected();
 
-        const recipe = props.selectedRecipe;
-        if (!recipe) {
-            ingredientsList.value = [];
-            numberOfItems.value = 0;
-            isLoading.value = false;
-            return;
-        }
-
-        if (!krogerConnected.value) {
-            // No Kroger: display the recipe's raw ingredients without product matching
-            ingredientsList.value = recipe.ingredients.map(ing => ({
-                name: ing.name,
-                description: ing.quantity
-                    ? `${ing.quantity}${ing.unit ? ' ' + ing.unit : ''}`
-                    : '',
-                upc: null,
-                imageUrls: []
-            }));
-            numberOfItems.value = ingredientsList.value.length;
-            isLoading.value = false;
-            return;
-        }
-
-        isLoading.value = true;
-        numberOfItems.value = recipe.ingredients.length;
-        const ingredients = recipe.ingredients.map(ingredient => {
-            return `${props.dietaryPreferences.join(' ')} ${ingredient.name}`.trim();
-        });
-        ingredientsList.value = await krogerService.getIngredientsList(ingredients);
-        isLoading.value = false;
-        return;
+    const recipe = props.selectedRecipe;
+    if (!recipe) {
+      ingredientsList.value = [];
+      numberOfItems.value = 0;
+      isLoading.value = false;
+      return;
     }
 
-    ingredientsList.value = [];
-    numberOfItems.value = 0;
+    if (!krogerConnected.value) {
+      ingredientsList.value = recipe.ingredients.map(ing => ({
+        name: ing.name,
+        description: ing.quantity
+          ? `${ing.quantity}${ing.unit ? ' ' + ing.unit : ''}`
+          : '',
+        upc: null,
+        imageUrls: []
+      }));
+      numberOfItems.value = ingredientsList.value.length;
+      isLoading.value = false;
+      return;
+    }
+
+    isLoading.value = true;
+    numberOfItems.value = recipe.ingredients.length;
+    const ingredients = recipe.ingredients.map(ingredient =>
+      `${props.dietaryPreferences.join(' ')} ${ingredient.name}`.trim()
+    );
+    ingredientsList.value = await krogerService.getIngredientsList(ingredients);
     isLoading.value = false;
-    krogerConnected.value = true;
+    return;
+  }
+
+  ingredientsList.value = [];
+  numberOfItems.value = 0;
+  isLoading.value = false;
+  krogerConnected.value = true;
 });
 
 function handleRemoveItemClick(upc) {
-    ingredientsList.value = ingredientsList.value.filter(item => item.upc !== upc);
-    numberOfItems.value = ingredientsList.value.length;
-    if (numberOfItems.value === 0) {
-        closeDialog();
-    }
+  ingredientsList.value = ingredientsList.value.filter(item => item.upc !== upc);
+  numberOfItems.value = ingredientsList.value.length;
+  if (numberOfItems.value === 0) closeDialog();
 }
 
 async function handleAddItemsToCartClick() {
-    if (isAddingToCart.value || !ingredientsList.value.length) {
-        return;
-    }
+  if (isAddingToCart.value || !ingredientsList.value.length) return;
 
-    const numItemsAdded = ingredientsList.value.length;
-    let itemsToAdd = ingredientsList.value.map(item => ({
-        upc: item.upc,
-        quantity: 1,
-        modality: "PICKUP"
-    }));
+  const numItemsAdded = ingredientsList.value.length;
+  const itemsToAdd = ingredientsList.value.map(item => ({
+    upc: item.upc,
+    quantity: 1,
+    modality: "PICKUP"
+  }));
 
-    isAddingToCart.value = true;
-
-    try {
-        await krogerService.addToCart(itemsToAdd);
-        closeDialog();
-        toast.add({ severity: 'success', summary: 'Added to Cart', detail: `${numItemsAdded} items added to cart successfully! Remember to check out on the Kroger website.`, life: 5000 });
-    } finally {
-        isAddingToCart.value = false;
-    }
+  isAddingToCart.value = true;
+  try {
+    await krogerService.addToCart(itemsToAdd);
+    closeDialog();
+    toast.add({
+      severity: 'success',
+      summary: 'Added to Cart',
+      detail: `${numItemsAdded} items added to cart successfully! Remember to check out on the Kroger website.`,
+      life: 5000
+    });
+  } finally {
+    isAddingToCart.value = false;
+  }
 }
 </script>
 
 <template>
-    <div v-if="dialogVisible && selectedRecipe" class="recipe-dialog-overlay" @click.self="closeDialog">
-        <section class="recipe-dialog" role="dialog" aria-modal="true" aria-labelledby="recipe-dialog-title">
-            <div class="recipe-dialog-shell">
-                <header class="recipe-dialog-header">
-                    <div class="shopping-icon" aria-hidden="true">
-                        <i class="pi pi-cart-arrow-down"></i>
-                    </div>
-                    <div class="recipe-dialog-heading">
-                        <h2 id="recipe-dialog-title">{{ selectedRecipe.recipeName }}</h2>
-                        <p v-if="krogerConnected">Review the ingredients below, remove anything you do not need, then add the rest to your Kroger cart.</p>
-                                <p v-else>Here are the ingredients for this recipe. Connect your Kroger account to add them to your cart.</p>
-                    </div>
-                </header>
+  <div
+    v-if="dialogVisible && selectedRecipe"
+    class="dialog-overlay"
+    @click.self="closeDialog"
+  >
+    <section
+      class="dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="recipe-dialog-title"
+    >
+      <!-- Header -->
+      <header class="dialog-header">
+        <div class="cart-icon" aria-hidden="true">
+          <i class="pi pi-cart-arrow-down"></i>
+        </div>
+        <div class="dialog-heading">
+          <h2 id="recipe-dialog-title" class="dialog-title">{{ selectedRecipe.recipeName }}</h2>
+          <p class="dialog-sub" v-if="krogerConnected">
+            Review the ingredients below, remove anything you don't need, then add the rest to your cart.
+          </p>
+          <p class="dialog-sub" v-else>
+            Here are the ingredients for this recipe. Connect your Kroger account to add them to your cart.
+          </p>
+        </div>
+      </header>
 
-                <div class="recipe-dialog-body">
-                    <loading-spinner v-if="isLoading" message="One sec, grabbing those items for you..."></loading-spinner>
+      <!-- Body -->
+      <div class="dialog-body">
+        <loading-spinner v-if="isLoading" message="One sec, grabbing those items for you…" />
 
-                    <template v-else>
-                        <div v-if="selectedRecipe.tags?.length" class="recipe-tags-section">
-                            <span v-for="tag in selectedRecipe.tags" :key="tag" class="recipe-tag">
-                                {{ tag }}
-                            </span>
-                        </div>
+        <template v-else>
+          <!-- Tags -->
+          <div v-if="selectedRecipe.tags?.length" class="dialog-tags">
+            <span v-for="tag in selectedRecipe.tags" :key="tag" class="dialog-tag">{{ tag }}</span>
+          </div>
 
-                        <div class="ingredients-section">
-                            <div class="ingredients-summary">
-                                <h3>{{ krogerConnected ? 'Add ingredients to cart' : 'Ingredients' }}</h3>
-                                <span>{{ numberOfItems }} {{ numberOfItems === 1 ? 'item' : 'items' }}</span>
-                            </div>
-
-                            <ul v-if="ingredientsList.length" class="ingredients-list">
-                                <li v-for="ingredient in ingredientsList" :key="ingredient.upc || ingredient.name"
-                                    class="ingredient-card">
-                                    <div class="ingredient-main">
-                                        <img v-if="ingredient.imageUrls?.[0]" :src="ingredient.imageUrls[0]"
-                                            :alt="ingredient.name" class="ingredient-image" />
-                                        <div class="ingredient-copy">
-                                            <p class="ingredient-name">{{ ingredient.name }}</p>
-                                            <span class="ingredient-description">{{ ingredient.description }}</span>
-                                        </div>
-                                    </div>
-                                    <button v-if="krogerConnected" type="button" class="remove-ingredient-button"
-                                        :aria-label="`Remove ${ingredient.name}`"
-                                        @click="handleRemoveItemClick(ingredient.upc)">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </li>
-                            </ul>
-
-                            <p v-else class="empty-state">No ingredients are left to add for this recipe.</p>
-                        </div>
-
-                        <!-- No Kroger connection: prompt to connect -->
-                        <kroger-connection-alert
-                            v-if="!krogerConnected"
-                            redirect-page="recipes"
-                            class="dialog-kroger-alert"
-                        />
-
-                        <div class="recipe-dialog-actions">
-                            <button type="button" class="dialog-button secondary" @click="closeDialog()">
-                                Close
-                            </button>
-                            <button v-if="krogerConnected" type="button" class="dialog-button primary"
-                                :disabled="!numberOfItems || isLoading || isAddingToCart"
-                                @click="handleAddItemsToCartClick()">
-                                <span v-if="isAddingToCart" class="button-loading-state" aria-live="polite">
-                                    <span class="button-spinner" aria-hidden="true"></span>
-                                    Adding items...
-                                </span>
-                                <span v-else>
-                                    Add {{ numberOfItems }} {{ numberOfItems === 1 ? 'item' : 'items' }} to cart
-                                </span>
-                            </button>
-                        </div>
-                    </template>
-                </div>
+          <!-- Ingredients -->
+          <div class="ingredients-section">
+            <div class="ingredients-summary">
+              <h3 class="ingredients-heading">{{ krogerConnected ? 'Add ingredients to cart' : 'Ingredients' }}</h3>
+              <span class="ingredients-count">{{ numberOfItems }} {{ numberOfItems === 1 ? 'item' : 'items' }}</span>
             </div>
-        </section>
-    </div>
+
+            <ul v-if="ingredientsList.length" class="ingredients-list">
+              <li
+                v-for="ingredient in ingredientsList"
+                :key="ingredient.upc || ingredient.name"
+                class="ingredient-item"
+              >
+                <div class="ingredient-main">
+                  <div v-if="ingredient.imageUrls?.[0]" class="ingredient-img-wrap">
+                    <img :src="ingredient.imageUrls[0]" :alt="ingredient.name" class="ingredient-img" />
+                  </div>
+                  <div class="ingredient-copy">
+                    <p class="ingredient-name">{{ ingredient.name }}</p>
+                    <span class="ingredient-desc">{{ ingredient.description }}</span>
+                  </div>
+                </div>
+                <button
+                  v-if="krogerConnected"
+                  type="button"
+                  class="remove-btn"
+                  :aria-label="`Remove ${ingredient.name}`"
+                  @click="handleRemoveItemClick(ingredient.upc)"
+                >
+                  <i class="pi pi-times" aria-hidden="true"></i>
+                </button>
+              </li>
+            </ul>
+
+            <p v-else class="ingredients-empty">No ingredients left to add for this recipe.</p>
+          </div>
+
+          <!-- Kroger connection prompt -->
+          <kroger-connection-alert
+            v-if="!krogerConnected"
+            redirect-page="recipes"
+            class="dialog-kroger-alert"
+          />
+
+          <!-- Actions -->
+          <div class="dialog-actions">
+            <button type="button" class="btn-secondary" @click="closeDialog()">
+              Close
+            </button>
+            <button
+              v-if="krogerConnected"
+              type="button"
+              class="btn-primary"
+              :disabled="!numberOfItems || isLoading || isAddingToCart"
+              @click="handleAddItemsToCartClick()"
+            >
+              <span v-if="isAddingToCart" class="btn-loading">
+                <span class="btn-spinner" aria-hidden="true"></span>
+                Adding items…
+              </span>
+              <span v-else>
+                Add {{ numberOfItems }} {{ numberOfItems === 1 ? 'item' : 'items' }} to cart
+              </span>
+            </button>
+          </div>
+        </template>
+      </div>
+    </section>
+  </div>
 </template>
 
 <style scoped lang="scss">
-.recipe-dialog-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 1200;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1.5rem;
-    background: rgba(29, 16, 48, 0.42);
-    backdrop-filter: blur(6px);
+/* ─── Overlay ─────────────────────────────────────────────── */
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-lg);
+  background: oklch(20% 0.012 50 / 0.48);
+  backdrop-filter: blur(6px);
 }
 
-.recipe-dialog {
-    width: min(100%, 46rem);
-    max-height: min(88vh, 54rem);
-    border-radius: 28px;
-    background: #ffffff;
-    box-shadow: 0 24px 60px rgba(41, 23, 74, 0.2);
-    overflow: hidden;
+/* ─── Dialog shell ───────────────────────────────────────── */
+.dialog {
+  width: min(100%, 46rem);
+  max-height: min(88vh, 54rem);
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px;
+  background: var(--color-paper);
+  border: 1px solid var(--color-rule);
+  box-shadow: 0 24px 60px oklch(20% 0.012 50 / 0.14);
+  overflow: hidden;
 }
 
-.recipe-dialog-shell {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    max-height: min(88vh, 54rem);
+/* ─── Header ─────────────────────────────────────────────── */
+.dialog-header {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-2xl) var(--space-xl) var(--space-lg);
+  text-align: center;
 }
 
-.recipe-dialog-header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1.25rem;
-    padding: 2.75rem 2.5rem 1.5rem;
-    text-align: center;
+.cart-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.25rem;
+  height: 4.25rem;
+  border-radius: 50%;
+  background: var(--color-accent-dim);
+  border: 1px solid oklch(62% 0.22 42 / 0.25);
+  color: var(--color-accent);
+  font-size: 1.9rem;
 }
 
-.shopping-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 4.75rem;
-    height: 4.75rem;
-    border-radius: 999px;
-    background: linear-gradient(135deg, #4713a3 0%, #6f38d8 100%);
-    box-shadow: 0 14px 30px rgba(71, 19, 163, 0.28);
-    color: #ffffff;
-    font-size: 2rem;
+.dialog-heading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
 }
 
-.recipe-dialog-heading {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-
-    h2 {
-        margin: 0;
-        color: #2f1760;
-        font-family: "Montserrat", sans-serif;
-        font-size: 2rem;
-        font-weight: 700;
-    }
-
-    p {
-        margin: 0;
-        color: #5b5170;
-        font-family: "Montserrat", sans-serif;
-        font-size: 1rem;
-        line-height: 1.7;
-    }
+.dialog-title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 600;
+  font-style: normal;
+  color: var(--color-ink);
+  letter-spacing: -0.02em;
+  margin: 0;
 }
 
-.recipe-dialog-body {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    padding: 0 2.5rem 2rem;
+.dialog-sub {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-ink-2);
+  line-height: 1.6;
+  margin: 0;
 }
 
-.recipe-tags-section {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.65rem;
-    margin-bottom: 1.5rem;
+/* ─── Scrollable body ─────────────────────────────────────── */
+.dialog-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-lg) var(--space-xl) var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
 }
 
-.recipe-tag {
-    border-radius: 999px;
-    padding: 0.45rem 0.9rem;
-    background: #f2ebff;
-    color: #5b30b3;
-    font-family: "Montserrat", sans-serif;
-    font-size: 0.85rem;
-    font-weight: 600;
+/* ─── Tags ───────────────────────────────────────────────── */
+.dialog-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs);
 }
 
+.dialog-tag {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: capitalize;
+  padding: 0.25rem 0.7rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-2-bg);
+  border: 1px solid var(--color-accent-2-border);
+  color: var(--color-accent-2);
+}
+
+/* ─── Ingredients ─────────────────────────────────────────── */
 .ingredients-section {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
 }
 
 .ingredients-summary {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-sm);
+}
 
-    h3 {
-        margin: 0;
-        color: #2f1760;
-        font-family: "Montserrat", sans-serif;
-        font-size: 1.2rem;
-        font-weight: 700;
-    }
+.ingredients-heading {
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: var(--color-ink);
+  margin: 0;
+}
 
-    span {
-        color: #6d6283;
-        font-family: "Montserrat", sans-serif;
-        font-size: 0.95rem;
-        font-weight: 600;
-    }
+.ingredients-count {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-ink-2);
 }
 
 .ingredients-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.9rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.ingredient-card {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 1rem 1.1rem;
-    border: 1px solid #e7ddfb;
-    border-radius: 20px;
-    box-shadow: 0 4px 6px rgba(38, 18, 76, 0.1);
+.ingredient-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-paper);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-card);
+  transition: border-color var(--dur-micro) var(--ease-out);
+
+  &:hover { border-color: oklch(80% 0.012 85); }
 }
 
 .ingredient-main {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-width: 0;
+  flex: 1;
 }
 
-.ingredient-image {
-    width: 4rem;
-    height: 4rem;
-    border-radius: 16px;
-    object-fit: cover;
-    background: #f1eef8;
-    flex-shrink: 0;
+.ingredient-img-wrap {
+  flex-shrink: 0;
+  width: 3.75rem;
+  height: 3.75rem;
+  border-radius: 10px;
+  background: var(--color-paper-2);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ingredient-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .ingredient-copy {
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-    min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3xs);
+  min-width: 0;
 }
 
 .ingredient-name {
-    margin: 0;
-    color: #26124c;
-    font-family: "Montserrat", sans-serif;
-    font-size: 1rem;
-    font-weight: 700;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--color-ink);
+  margin: 0;
+  overflow-wrap: anywhere;
 }
 
-.ingredient-description {
-    color: #6d6283;
-    font-family: "Montserrat", sans-serif;
-    font-size: 0.92rem;
-    line-height: 1.5;
+.ingredient-desc {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-ink-2);
+  line-height: 1.5;
 }
 
-.remove-ingredient-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.5rem;
-    height: 2.5rem;
-    border: 1px solid #dcccfb;
-    border-radius: 999px;
-    background: #ffffff;
-    color: #6a3acf;
-    cursor: pointer;
-    flex-shrink: 0;
-    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+.remove-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--color-rule);
+  border-radius: 50%;
+  background: var(--color-paper);
+  color: var(--color-ink-2);
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition:
+    background var(--dur-micro) var(--ease-out),
+    border-color var(--dur-micro) var(--ease-out),
+    color var(--dur-micro) var(--ease-out),
+    transform var(--dur-micro) var(--ease-out);
 
-    span {
-        font-size: 1.35rem;
-        line-height: 1;
-    }
+  &:hover {
+    background: var(--color-error-bg);
+    border-color: var(--color-error);
+    color: var(--color-error);
+    transform: translateY(-1px);
+  }
 
-    &:hover {
-        background: #f3ecff;
-        border-color: #c6aff8;
-        color: #4713a3;
-        transform: translateY(-1px);
-    }
-
-    &:focus-visible {
-        outline: 3px solid rgba(111, 56, 216, 0.2);
-        outline-offset: 3px;
-    }
+  &:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 3px;
+  }
 }
 
-.empty-state {
-    margin: 0;
-    border-radius: 20px;
-    padding: 1.2rem;
-    background: #faf7ff;
-    color: #5b5170;
-    font-family: "Montserrat", sans-serif;
-    text-align: center;
+.ingredients-empty {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--color-ink-2);
+  text-align: center;
+  padding: var(--space-lg);
+  background: var(--color-paper-2);
+  border-radius: var(--radius-card);
+  margin: 0;
 }
 
-.recipe-dialog-actions {
-    position: sticky;
-    bottom: 0;
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.9rem;
-    margin-top: 1.5rem;
-    padding: 1rem 0 0;
+/* ─── Kroger alert spacing ────────────────────────────────── */
+.dialog-kroger-alert { margin-top: var(--space-xs); }
+
+/* ─── Actions ─────────────────────────────────────────────── */
+.dialog-actions {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+  padding-top: var(--space-md);
+  margin-top: auto;
 }
 
-.dialog-button {
-    border-radius: 16px;
-    padding: 0.95rem 1.4rem;
-    font-family: "Montserrat", sans-serif;
-    font-size: 0.98rem;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 10px 22px rgba(41, 23, 74, 0.12);
-    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+.btn-primary,
+.btn-secondary {
+  padding: 0.95rem 1.4rem;
+  border-radius: var(--radius-btn);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px oklch(20% 0.012 50 / 0.10);
+  transition: background-color var(--dur-micro) var(--ease-out);
 
-    &:focus-visible {
-        outline: 3px solid rgba(111, 56, 216, 0.2);
-        outline-offset: 3px;
-    }
+  &:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 3px;
+  }
 
-    &:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        transform: none;
-        box-shadow: none;
-    }
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
 }
 
-.dialog-button.secondary {
-    border: 1px solid #d8c9f8;
-    background: #ffffff;
-    color: #4f2a9d;
+.btn-secondary {
+  background: var(--color-paper-2);
+  border: 1px solid var(--color-rule);
+  color: var(--color-ink);
 
-    &:hover:not(:disabled) {
-        background: #f7f2ff;
-        border-color: #bea5f2;
-    }
+  &:hover:not(:disabled) { background: oklch(88% 0.018 88); }
 }
 
-.dialog-button.primary {
-    border: none;
-    background: linear-gradient(135deg, #4713a3 0%, #6f38d8 100%);
-    color: #ffffff;
-    box-shadow: 0 14px 30px rgba(71, 19, 163, 0.28);
+.btn-primary {
+  background: var(--color-accent);
+  border: none;
+  color: var(--color-accent-ink);
 
-    &:hover:not(:disabled) {
-        box-shadow: 0 18px 34px rgba(71, 19, 163, 0.32);
-    }
+  &:hover:not(:disabled) { background: oklch(54% 0.22 42); }
 }
 
-.button-loading-state {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.6rem;
+/* ─── Button spinner ─────────────────────────────────────── */
+.btn-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
 }
 
-.button-spinner {
-    width: 1rem;
-    height: 1rem;
-    border: 2px solid rgba(255, 255, 255, 0.35);
-    border-top-color: #ffffff;
-    border-radius: 999px;
-    animation: spin 0.7s linear infinite;
+.btn-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid oklch(98% 0.005 85 / 0.4);
+  border-top-color: var(--color-accent-ink);
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
 }
 
 @keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
+  to { transform: rotate(360deg); }
 }
 
-.dialog-kroger-alert {
-    margin-top: 1.25rem;
-}
-
+/* ─── Responsive ─────────────────────────────────────────── */
 @media (max-width: 640px) {
-    .recipe-dialog {
-        width: min(100%, 34rem);
-        max-height: min(92vh, 54rem);
-    }
+  .dialog {
+    width: min(100%, 34rem);
+    max-height: min(92vh, 54rem);
+  }
 
-    .recipe-dialog-header {
-        padding: 2rem 1.25rem 1.25rem;
-    }
+  .dialog-header { padding: var(--space-xl) var(--space-md) var(--space-md); }
+  .dialog-body { padding: var(--space-md); }
 
-    .recipe-dialog-heading {
-        h2 {
-            font-size: 1.6rem;
-        }
+  .dialog-title { font-size: var(--text-lg); }
+  .dialog-sub { font-size: var(--text-xs); }
 
-        p {
-            font-size: 0.95rem;
-        }
-    }
+  .ingredients-summary { flex-direction: column; align-items: flex-start; }
+  .ingredient-item { align-items: flex-start; }
+  .ingredient-main { align-items: flex-start; }
 
-    .recipe-dialog-body {
-        padding: 0 1.25rem 1.25rem;
-    }
+  .dialog-actions {
+    flex-direction: column-reverse;
 
-    .ingredients-summary {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .ingredient-card {
-        align-items: flex-start;
-    }
-
-    .ingredient-main {
-        align-items: flex-start;
-    }
-
-    .recipe-dialog-actions {
-        flex-direction: column-reverse;
-    }
-
-    .dialog-button {
-        width: 100%;
-    }
+    .btn-primary,
+    .btn-secondary { width: 100%; justify-content: center; }
+  }
 }
 </style>

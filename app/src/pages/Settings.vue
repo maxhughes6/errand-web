@@ -10,61 +10,75 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="page-container">
-    <div class="page-content">
-      <h1>Settings</h1>
-      <p class="page-description">Hey, {{ user.preferredName }}. These are your settings and preferences.</p>
-      <div class="empty-state">
-        <p>This page is under construction. Account settings will be available here soon.</p>
-      </div>
+  <div class="settings-page">
+    <header class="page-header">
+      <h1 class="page-heading">Settings</h1>
+      <p class="page-sub">Hey, {{ user.preferredName }}. Your preferences and account settings live here.</p>
+    </header>
+
+    <div class="empty-state">
+      <i class="pi pi-wrench empty-icon" aria-hidden="true"></i>
+      <p class="empty-text">This page is under construction. Account settings will be available here soon.</p>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-.page-container {
+.settings-page {
+  width: 100%;
+  max-width: 1100px;
+  padding: var(--space-2xl) var(--space-lg) var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+/* ─── Header ─────────────────────────────────────────────── */
+.page-heading {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  font-style: normal;
+  color: var(--color-ink);
+  letter-spacing: -0.02em;
+  margin: 0 0 var(--space-2xs);
+}
+
+.page-sub {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--color-ink-2);
+  margin: 0;
+}
+
+/* ─── Empty state ────────────────────────────────────────── */
+.empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 100%;
-  padding: 2rem;
-  font-family: "Montserrat", sans-serif;
-}
-
-.page-content {
-  width: 100%;
-  max-width: 1100px;
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 4px 24px 0 rgba(71, 19, 163, 0.10), 0 1.5px 6px 0 rgba(71, 19, 163, 0.08);
-  padding: 2.5rem;
-
-  h1 {
-    color: #4713a3;
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin: 0 0 0.5rem 0;
-    font-family: "Montserrat", sans-serif;
-  }
-
-  .page-description {
-    color: #5d4a7a;
-    font-size: 1.1rem;
-    margin: 0 0 2rem 0;
-  }
-}
-
-.empty-state {
-  padding: 3rem 2rem;
+  gap: var(--space-md);
+  padding: var(--space-2xl) var(--space-xl);
   text-align: center;
-  border: 2px dashed #e0d4f7;
-  border-radius: 12px;
-  background: #f9f7ff;
+  border: 2px dashed var(--color-rule);
+  border-radius: var(--radius-card);
+  background: var(--color-paper-2);
+}
 
-  p {
-    color: #5d4a7a;
-    font-size: 1rem;
-    margin: 0;
-  }
+.empty-icon {
+  font-size: 2rem;
+  color: var(--color-ink-2);
+  opacity: 0.5;
+}
+
+.empty-text {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--color-ink-2);
+  margin: 0;
+  max-width: 48ch;
+}
+
+@media (max-width: 600px) {
+  .settings-page { padding: var(--space-xl) var(--space-md) var(--space-lg); }
 }
 </style>

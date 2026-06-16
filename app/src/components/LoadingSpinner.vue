@@ -1,45 +1,46 @@
 <script setup>
 defineProps({
-    message: {
-        type: String,
-        default: 'Loading...'
-    }
+  message: {
+    type: String,
+    default: 'Loading…'
+  }
 });
 </script>
 
 <template>
-    <div class="loading-container">
-      <div class="loading-spinner"></div>
-      <p>{{ message }}</p>
-    </div>
+  <div class="loading-container">
+    <div class="loading-spinner" aria-hidden="true"></div>
+    <p class="loading-message">{{ message }}</p>
+  </div>
 </template>
 
 <style scoped lang="scss">
-    .loading-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 400px;
-    
-    .loading-spinner {
-        width: 50px;
-        height: 50px;
-        border: 4px solid #f3f3f3;
-        border-top: 4px solid #4713a3;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-        margin-bottom: 20px;
-    }
-    
-    p {
-        color: #666;
-        font-size: 1.1rem;
-    }
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: var(--space-md);
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid var(--color-rule);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: spin 0.85s linear infinite;
+}
+
+.loading-message {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--color-ink-2);
+  margin: 0;
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+  to { transform: rotate(360deg); }
 }
 </style>
