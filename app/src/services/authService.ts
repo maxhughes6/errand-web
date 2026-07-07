@@ -9,8 +9,15 @@ const KROGER_CLIENT_ID = import.meta.env.VITE_KROGER_CLIENT_ID;
 
 export const authService = {
     async redirectToGrocererAuthorization(grocerer: string, returnTo: string = "user-signup"): Promise<void> {
-        const returnUrl = `${redirectUri}?returnTo=${returnTo}`;
-        window.location.href = `https://api.kroger.com/v1/connect/oauth2/authorize?scope=product.compact%20cart.basic:write&response_type=code&client_id=${KROGER_CLIENT_ID}&redirect_uri=${returnUrl}&banner=${grocerer}`;
+        const params = new URLSearchParams({
+            scope: "product.compact cart.basic:write",
+            response_type: "code",
+            client_id: KROGER_CLIENT_ID,
+            redirect_uri: redirectUri,
+            state: returnTo, // State used to store returnTo value
+            banner: grocerer
+        });
+        window.location.href = `https://api.kroger.com/v1/connect/oauth2/authorize?${params.toString()}`;
     },
 
     async exchangeCodeForAuthToken(code: string): Promise<KrogerAuthorizationResponse> {

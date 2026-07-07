@@ -13,8 +13,8 @@ onMounted(async () => {
     const code = route.query.code?.toString() || '';
     let returnTo = 'user-signup';
 
-    if (route.query.returnTo != undefined) {
-        returnTo = route.query.returnTo.toString();
+    if (route.query.state != undefined) {
+        returnTo = route.query.state.toString();
     }
 
     if (!code) {
