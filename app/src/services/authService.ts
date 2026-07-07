@@ -17,15 +17,43 @@ export const authService = {
             state: returnTo, // State used to store returnTo value
             banner: grocerer
         });
+
+        // TODO: remove — OAuth prod debugging
+        console.log('[OAUTH DEBUG] authorize step', {
+            KROGER_CLIENT_ID,
+            redirect_uri: redirectUri,
+            locationOrigin: location.origin,
+            ERRAND_API_BASE_URL,
+            authorizeUrl: `https://api.kroger.com/v1/connect/oauth2/authorize?${params.toString()}`
+        });
+
         window.location.href = `https://api.kroger.com/v1/connect/oauth2/authorize?${params.toString()}`;
     },
 
     async exchangeCodeForAuthToken(code: string): Promise<KrogerAuthorizationResponse> {
+        // TODO: remove — OAuth prod debugging
+        console.log('[OAUTH DEBUG] token exchange step', {
+            redirectUri,
+            locationOrigin: location.origin,
+            code,
+            endpoint: `${ERRAND_API_BASE_URL}/auth/authorize`
+        });
+
         const response = await authenticatedFetch(`${ERRAND_API_BASE_URL}/auth/authorize`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ code, redirectUri })
         });
+
+        // TODO: remove — OAuth prod debugging
+        if (!response.ok) {
+            const rawBody = await response.clone().text();
+            console.error('[OAUTH DEBUG] token exchange failed', {
+                status: response.status,
+                statusText: response.statusText,
+                body: rawBody
+            });
+        }
 
         const responseAsJson = await response.json();
         return {
